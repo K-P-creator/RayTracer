@@ -5,4 +5,8 @@ Included are custom Color, Ray, Vector, Sphere and Scene classes. I plan to add 
 for multi threading in the future and also to implement the SFML library to display
 results rather than depending on the .ppm. 
 
+Compiles with G++ (tested on windows)
+Use:
+make -f Makefile.txt
+
 Expect to see a branch soon with multi-threading
