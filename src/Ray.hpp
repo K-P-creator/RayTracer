@@ -1,16 +1,16 @@
-//The ray struct contains two vectors, one containing the origin coordinates and another containing the direction vector
+//The ray struct contains two myVectors, one containing the origin coordinates and another containing the direction myVector
 #pragma once
-#include "Vector.hpp"
+#include "myVector.hpp"
 
 struct Ray {
-    Vector m_origin;
-    Vector m_direction;
+    myVector m_origin;
+    myVector m_direction;
 
     //default ctor
-    Ray() { m_origin = Vector(0, 0, 0); m_direction = Vector(0, 0, 0); }
+    Ray() { m_origin = myVector(0, 0, 0); m_direction = myVector(0, 0, 0); }
 
     //parametrized ctor
-    Ray(const Vector origin, const Vector direction) { 
+    Ray(const myVector origin, const myVector direction) { 
         m_origin = origin; 
         m_direction = direction; 
         }

@@ -5,7 +5,7 @@ bool Sphere::CheckCollision(const Ray& ray, double & t)
 {
     //calculates the discriminant of the sphere and the ray
     double a = Dot(ray.m_direction, ray.m_direction);
-    Vector oc = (ray.m_origin - this->m_origin);
+    myVector oc = (ray.m_origin - this->m_origin);
     double b = 2 * Dot(ray.m_direction, (oc));
     double c = (Dot(oc, oc) - m_radius * m_radius);
     double discrim = ((b * b) - (4.0 * a * c));
@@ -23,7 +23,7 @@ bool Sphere::CheckCollision(const Ray& ray, double & t)
 bool Sphere::CheckCollision(const Ray& ray)
 {
     double a = Dot(ray.m_direction, ray.m_direction);
-    Vector oc = (ray.m_origin - this->m_origin);
+    myVector oc = (ray.m_origin - this->m_origin);
     double b = 2 * Dot(ray.m_direction, (oc));
     double c = (Dot(oc, oc) - m_radius * m_radius);
     double discrim = ((b * b) - (4.0 * a * c));

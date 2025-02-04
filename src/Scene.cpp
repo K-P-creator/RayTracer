@@ -1,18 +1,20 @@
 #include "Scene.h"
 #include "Sphere.h"
 #include "Globals.h"
+#include <thread>
+#include <vector>
+#include <iostream>
+#include <windows.h>
 
+using namespace std;
 
-Scene::Scene(const std::initializer_list<Sphere> init)
+//alternate ctor to take in a vector of spheres
+Scene::Scene(const std::vector<Sphere> &spheres) 
 {
-    m_objects = new Sphere[init.size()];
-    m_count = init.size();
-    std::copy(init.begin(), init.end(), m_objects);
-    m_k_diff = 0.8;
-    m_k_amb = 0.5;
-    m_height = 720,
-    m_width = 1080,
-    m_viewpoint = Vector(500, 500, -1000);
+    m_count = spheres.size();
+    for (const auto & sp : spheres){
+        m_objects.push_back(sp);
+    }
 }
 
 Color Scene::get_color(Ray& ray)
@@ -21,16 +23,16 @@ Color Scene::get_color(Ray& ray)
     double t = MAX_DISTANCE;
     double pt = 0;
     bool intersect = false;
-    Vector intersection;
-    Vector lightNorm;
-    Vector intersectNorm = Vector(-1,-1,-1);
+    myVector intersection;
+    myVector lightNorm;
+    myVector intersectNorm = myVector(-1,-1,-1);
 
     for (int i = 0; i < m_count; i++) {
         if (m_objects[i].CheckCollision(ray, pt)) {
             if (pt < t) {
                 t = pt;
                 intersect = true;
-                Vector intersectPt(ray.m_origin.x + t * ray.m_direction.x,
+                myVector intersectPt(ray.m_origin.x + t * ray.m_direction.x,
                                    ray.m_origin.y + t * ray.m_direction.y,
                                    ray.m_origin.z + t * ray.m_direction.z); //gives (x,y,z) at ray-sphere intersection, I use this to getthe orthoganal vector to the sphere
 
@@ -86,7 +88,7 @@ void Scene::draw()
             // Transform pixel coordinates to a 3D direction
             double x = (ii - m_width / 2.0) / m_width * aspectRatio;
             double y = (m_height / 2.0 - i) / m_height;
-            Vector pixelDirection = Normalize(Vector(x, y, 1)); //camera points straight along z-axis
+            myVector pixelDirection = Normalize(myVector(x, y, 1)); //camera points straight along z-axis
 
             // Create a ray from the viewpoint toward the pixel
             Ray ray(m_viewpoint, pixelDirection);
@@ -96,38 +98,82 @@ void Scene::draw()
     }
 }
 
-//multi threaded draw fucntion
-/*
-void Scene::multiThreadedDraw()
-{
-    //open output doc and format
-    std::ofstream out("output/out.ppm");
-    out << "P3\n" << m_width << '\n' << m_height << '\n' << "255\n";
-    
-    //calculate number of rays for work allocation
-    size_t rayCount = SCENE_HEIGHT * SCENE_WIDTH;
+void Scene::multiThreadedDraw(){
+    //number of threads to create
+    size_t threadCount = thread::hardware_concurrency();
 
-    //obtain thread count from hardware
-    size_t threadCount = std::thread::hardware_concurrency();
+    //lines of pixels per thread
+    size_t perThread = m_height/threadCount;
 
-    //calculate workload per thread
-    size_t workLoad = rayCount / threadCount;
+    //create a vector of threads
+    vector <thread> threads;
 
-    //calculate aspect ratio to prevent stretching
+    //row buffer for thread color outputs 
+    vector <vector<Color>> rowBuffer(m_height);
+
+    //calculate aspect ratio to avoid stretching
     double aspectRatio = (1.0 * m_width) / m_height;
 
-    //create threads
-    std::thread* threadList;
-    threadList = new std::thread[threadCount];
+    //Lambda implementation for threads
+    //pass everything by reference and store to the buffer
+    auto drawRow = [&](size_t startRow, size_t endRow){
+        for (size_t i = startRow; i < endRow; i ++){
+            //color temp
+            vector <Color> temp(m_width);
 
-    for (int i = 0; i < SCENE_HEIGHT; i ++) {
-        for (int ii = 0; i < SCENE_WIDTH; ii++) {
-            for (int thdidx = 0; thdidx < threadCount; thdidx++) {
+            for (int ii = 0; ii < m_width; ii ++){
+                // Transform pixel coordinates to a 3D direction
+                double x = (ii - m_width / 2.0) / m_width * aspectRatio;
+                double y = (m_height / 2.0 - i) / m_height;
+                myVector pixelDirection = Normalize(myVector(x, y, 1)); //camera points straight along z-axis
 
+                // Create a ray from the viewpoint toward the pixel
+                Ray ray(m_viewpoint, pixelDirection);
+
+                //store color in temp color vector
+                temp[ii] = get_color(ray);
             }
+            //store temp color vector in buffer
+            rowBuffer[i] = temp;
         }
+    };
+    
+    //cout << "Starting Threads...\n";
+    
+    //start threads
+    for (size_t i = 0; i < threadCount-1; i ++){
+        threads.emplace_back(drawRow, perThread*i, perThread*i + perThread);
+        //cout << "   Starting " << threads[i].get_id() << endl;
     }
 
-}
-*/
+    //fill last thread with remainder of rows
+    threads.emplace_back(drawRow, perThread*(threadCount-1), m_height);
+    //cout << "   Starting " << threads[threads.size()-1].get_id() << endl;
 
+    //cout << "Joining Threads...\n";
+    
+    //join threads
+    for (auto& t : threads) {
+        //cout << "   Joining " << t.get_id() << endl;
+        t.join();
+    }
+
+    //cout << "All threads successfully joined\n";
+
+    //set up output stream
+    std:: ofstream out("output/out.ppm");
+    out << "P3\n" << m_width << '\n' << m_height << '\n' << "255\n";
+
+    //print to ppm file
+    //use ' ' between vals and \n after rows for readability
+    for (const auto & str : rowBuffer){
+        for (int i = 0; i < m_width; i ++){
+            out << str[i] << ' ';
+        }
+        out << endl;
+    }
+
+    //cout << "Rendering Complete. Output saved as output/out.ppm" << endl;
+
+    return;
+}

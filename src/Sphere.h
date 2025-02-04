@@ -6,19 +6,19 @@
 struct Sphere {
 	//member variables
 	double m_radius;
-	Vector m_origin;
+	myVector m_origin;
 	Color m_color;
 
 
 	//default ctor
 	Sphere() {
 		this->m_radius = 0;
-		this->m_origin = Vector(0,0,0);
+		this->m_origin = myVector(0,0,0);
 		this->m_color = Color(0, 0, 0);
 	}
 
 	//par ctor
-	Sphere(double radius, Vector origin, Color color) {
+	Sphere(double radius, myVector origin, Color color) {
 		this->m_origin = origin;
 		this->m_radius = radius;
 		this->m_color = color;
