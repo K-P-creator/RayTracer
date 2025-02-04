@@ -6,12 +6,12 @@ and the main generates 100 random spheres to render. It also includes a timer to
 compare the single vs multi threaded render times. My most recent run with the updated 
 globals/main is as follows:
 
-Starting single thread execution...
+Single thread execution...
 Elapsed time: 13.1985 seconds
-Starting multi-threaded execution...
+Multi-threaded execution...
 Elapsed time: 2.85339 seconds
 
-This represents a 4.6X boost in Speed!
+This represents a 4.6X boost in Speed! (on my 16 thread AMD Ryzen 9 6900HS)
 
 I use GIMP to view .ppm files. If you don't have GIMP, I included a screenshot of out.ppm
 saved as output/out-example. This ray tracer currently only supports sphere objects. 
