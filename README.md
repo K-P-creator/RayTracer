@@ -1,27 +1,28 @@
-Simple Ray Tracer that outputs a .ppm file to display results
+# Multi-Threaded Ray Tracer
 
-I have implemented multi-threading to greatly speed up the render time of a scene.
-Default scene res is 2560x1600 (my native res, you can change this in globals.h)
-and the main generates 100 random spheres to render. It also includes a timer to 
-compare the single vs multi threaded render times. My most recent run with the updated 
-globals/main is as follows:
+## Overview
+This ray tracer implements **multi-threading** for improved rendering performance. It supports **spheres** and **planes** using an `Object` base class with derived shape classes. The output is a `.ppm` file, viewable in **GIMP** or other image viewers.
 
-Single thread execution...
-Elapsed time: 13.1985 seconds
-Multi-threaded execution...
-Elapsed time: 2.85339 seconds
+## Performance
+Tested on an **AMD Ryzen 9 6900HS (16 threads)**, rendering a **2560x1600** scene with **100 random spheres**:
 
-This represents a 4.6X boost in Speed! (on my 16 thread AMD Ryzen 9 6900HS)
+- **Single-threaded:** `13.20s`
+- **Multi-threaded:** `2.85s` (4.6× speedup)
 
-I use GIMP to view .ppm files. If you don't have GIMP, I included a screenshot of out.ppm
-saved as output/out-example. This ray tracer currently only supports sphere objects. 
-Included are custom Color, Ray, Vector, Sphere and Scene classes. I port to the SFML library 
-in the future to display results rather than depending on the .ppm. I also want to implement
-more performance enhancing tecniques such as SIMD and better workload distribution for the
-threads. Perhaps eventually I will work on rendering with GPU instead of CPU as well.
+## Features
+- **Object-Oriented Design**: Uses polymorphism for easy shape expansion.
+- **Multi-Threading**: Significantly improves rendering times.
+- **Custom Classes**: Includes `Object`, `Color`, `Ray`, `myVector`, `Sphere`, `Plane`, and `Scene`.
 
-Compiles with G++ (tested on windows)
-Use:
-make -f Makefile.txt
-./raytracer
+## Planned Improvements
+- **SFML Integration**: Display results in real-time instead of `.ppm` files.
+- **SIMD Optimization**: Improve CPU performance.
+- **Better Workload Distribution**: Optimize thread workload distribution.
+- **GPU Acceleration**: Possible future migration to GPU friendly framework
+
+## Compilation & Usage
+### Build (G++ on Windows/Linux)
+```sh
+C: > make
+C: > ./raytracer
 
