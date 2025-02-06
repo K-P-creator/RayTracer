@@ -1,7 +1,7 @@
 // Demonstrates ray tracing functionality with multiple objs and colors
 // Outputs to a .ppm file, I use GIMP to display .ppm
 
-//usage ./raytracer [benchmark mode: T (optional)]
+//usage ./raytracer -debug(optional) -bench(optional)
 
 #include "Plane.h"
 #include "Sphere.h"
@@ -15,14 +15,26 @@
 
 using namespace std;
 
+//RUNTIME FLAGS
+
+//Debug flag will enable debug messages - format is -debug in the command line
+bool debug = false;
+//Benchmark flag will enable benchmark mode which compares the single vs multithread performance
+//this will print timed executions for both drawing methods. use -bench on command line
+bool bench = false;
+
 //returns random double in range [min, max]
 double randomDouble(double min, double max);
 
 //executes thread benchmark draw()
 void benchmarkDraw(Scene & scene);
 
+void parseArgs(int, char**, bool&, bool&);
+
 int main(int argc, char** argv) {
-    
+    //parse command line args
+    parseArgs(argc, argv, debug, bench);
+
     //set size ranges
     vector<shared_ptr<Object>> objs;
     int numobjs = 50;
@@ -30,7 +42,7 @@ int main(int argc, char** argv) {
 
 
     // Generate spheres with random attributes
-    cout << "Randomizing Objects..." << endl;
+    if (debug) cout << endl << "Randomizing Objects..." << endl;
     
     //seed
     srand(static_cast<unsigned int>(time(nullptr)));
@@ -53,13 +65,15 @@ int main(int argc, char** argv) {
         objs.emplace_back(make_shared<Sphere>(radius, position, color));
     }
 
-    //create a floor  and add it to objs 
+    //create a floor plane and add it to objs 
     objs.emplace_back(make_shared<Plane>(myVector(0.0, 0.0, 1.0), myVector(0, 1, 0), Color(255,10,10)));
 
 
     // Create scene with the generated objs
-    cout << "Constructing Scene" << endl;
+    if (debug) cout << "Constructing Scene..." << endl;
     Scene scene(objs);
+
+    if (debug) cout << "Setting Constants..." << endl;
 
     // Set constants for the scene
     scene.set_background(Color(SCENE_BACKGROUND));          // Dim gray background
@@ -72,15 +86,17 @@ int main(int argc, char** argv) {
 
 
     //draw the scene
-    cout << "Drawing Scene..." << endl;
+    if (debug) cout << "Drawing Scene..." << endl;
 
-    if (argc != 1){
-        if (*argv[1] == 'T') benchmarkDraw(scene);
+    if (bench){
+        if (debug) cout << "Starting Benchmark Draws..." << endl;
+        benchmarkDraw(scene);
     }else{
+        if (debug) cout << "Starting MultiThreaded Draw..." << endl;
         scene.multiThreadedDraw();
     }
 
-    cout << "Done!" << endl;
+    if (debug) cout << "Done!" << endl;
     return 0;
 }
 
@@ -116,4 +132,11 @@ void benchmarkDraw(Scene & scene){
     chrono::duration<double> elapsedMult = endMult - startMult;
 
     cout << "Elapsed time: " << elapsedMult.count() << " seconds\n";
+}
+
+void parseArgs(int argc, char** argv, bool& debug, bool& bench){
+    for (int i = 1; i < argc; i ++){
+        if (string(argv[i]) == "-bench") bench = true;
+        if (string(argv[i]) == "-debug") debug = true;
+    }
 }
