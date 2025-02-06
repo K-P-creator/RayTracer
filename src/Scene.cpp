@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 #include <iostream>
+#include <cassert>
 #include <windows.h>
 
 using namespace std;
@@ -19,11 +20,15 @@ Scene::Scene(const std::vector<Sphere> &spheres)
 
 Color Scene::get_color(Ray& ray)
 {
+    //default color is background
     Color color = m_background;
+
     double t = MAX_DISTANCE;
     double pt = 0;
+
     bool intersect = false;
-    myVector intersection;
+
+    myVector intersectPt;
     myVector lightNorm;
     myVector intersectNorm = myVector(-1,-1,-1);
 
@@ -32,35 +37,50 @@ Color Scene::get_color(Ray& ray)
             if (pt < t) {
                 t = pt;
                 intersect = true;
-                myVector intersectPt(ray.m_origin.x + t * ray.m_direction.x,
+
+                //gives (x,y,z) at ray-sphere intersection, I use this to get
+                //the orthoganal vector to the sphere
+                intersectPt = myVector(ray.m_origin.x + t * ray.m_direction.x,
                                    ray.m_origin.y + t * ray.m_direction.y,
-                                   ray.m_origin.z + t * ray.m_direction.z); //gives (x,y,z) at ray-sphere intersection, I use this to getthe orthoganal vector to the sphere
+                                   ray.m_origin.z + t * ray.m_direction.z); 
 
-                intersection = intersectPt;
 
-                intersectNorm = Normalize(intersectPt - m_objects[i].m_origin); //calculates the unit vector orthoganal to the intersection pt
-                lightNorm = Normalize(m_light_source - intersectPt); //calculates unit vector between light source and intersect pt, these are normalized in order to make the light
-                                                                     //fctr coefficient easier to calculate
+                //calculates the unit vector orthoganal to the intersection pt
+                intersectNorm = Normalize(intersectPt - m_objects[i].m_origin); 
 
-                double fctr = Dot(intersectNorm, lightNorm); //gives a coefficient for color brightness based on the angle between the vector from intersect pt and the light source
-                                                             //aka, surfaces on the sphere that point away from light source will have a 0 coefficient
 
+                //calculates unit vector between light source and intersect pt, 
+                //these are normalized in order to make the light
+                //fctr coefficient easier to calculate
+                lightNorm = Normalize(m_light_source - intersectPt); 
+                
+
+                //a coefficient for color brightness based on the angle between the vector from 
+                //intersect pt and the light source aka, surfaces on the sphere that point away from 
+                //light source will have a 0 coefficient
+                double fctr = Dot(intersectNorm, lightNorm); 
+                
+                
+                //calculates the ambient (no light) color of the sphere
                 color = Color(trunc(m_k_amb * m_objects[i].m_color.m_red),
                               trunc(m_k_amb * m_objects[i].m_color.m_green),
-                              trunc(m_k_amb * m_objects[i].m_color.m_blue)) + //calculates the ambient (no light) color of the sphere
+                              trunc(m_k_amb * m_objects[i].m_color.m_blue)) + 
+
+                //add the ambient color to the sphere color * fctr coeff * diffusion coeff
                          Color(trunc(m_k_diff * fctr * m_objects[i].m_color.m_red),
                                trunc(m_k_diff * fctr * m_objects[i].m_color.m_green),
-                               trunc(m_k_diff * fctr * m_objects[i].m_color.m_blue)); //adds the ambient color to the sphere color * fctr coeff * diffusion coeff
+                               trunc(m_k_diff * fctr * m_objects[i].m_color.m_blue)); 
             }
         }
     }
     
     //checks if there are other objects between the object and light source to cast a shadow
-    //this works for multiple objects, so if there are two objects casting double shadows on a point the shadow will be twice as dark
+    //this works for multiple objects, so if there are two objects casting double shadows on
+    // a point the shadow will be twice as dark
     if (t != MAX_DISTANCE && intersect) {
         for (int i = 0; i < m_count; i++) {
             //excludes the current object and checks if the light source is blocked
-            Ray lightRay(intersection, lightNorm);
+            Ray lightRay(intersectPt, lightNorm);
             double light_t = 0;
 
             if (m_objects[i].CheckCollision(lightRay, light_t) && light_t > 0) {
@@ -77,7 +97,9 @@ Color Scene::get_color(Ray& ray)
 
 void Scene::draw()
 {
-    std:: ofstream out("output/out.ppm");
+    std::ofstream out("output/out.ppm");
+    assert(out);
+
     out << "P3\n" << m_width << '\n' << m_height << '\n' << "255\n";
 
     //calculate aspect ratio for round spheres
@@ -125,8 +147,10 @@ void Scene::multiThreadedDraw(){
                 // Transform pixel coordinates to a 3D direction
                 double x = (ii - m_width / 2.0) / m_width * aspectRatio;
                 double y = (m_height / 2.0 - i) / m_height;
-                myVector pixelDirection = Normalize(myVector(x, y, 1)); //camera points straight along z-axis
-
+                
+                //camera points straight along z-axis
+                myVector pixelDirection = Normalize(myVector(x, y, 1)); 
+                
                 // Create a ray from the viewpoint toward the pixel
                 Ray ray(m_viewpoint, pixelDirection);
 
@@ -162,6 +186,7 @@ void Scene::multiThreadedDraw(){
 
     //set up output stream
     std:: ofstream out("output/out.ppm");
+    assert(out);
     out << "P3\n" << m_width << '\n' << m_height << '\n' << "255\n";
 
     //print to ppm file

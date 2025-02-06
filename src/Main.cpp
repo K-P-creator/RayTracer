@@ -1,6 +1,8 @@
 // Demonstrates ray tracing functionality with multiple spheres and colors
 // Outputs to a .ppm file, I use GIMP to display .ppm
 
+//usage ./raytracer [benchmark mode: T (optional)]
+
 #include "Scene.h"
 #include "Globals.h"
 #include <vector>
@@ -10,21 +12,26 @@
 
 using namespace std;
 
-// Function to generate a random float within a range
-double randomDouble(double min, double max) {
-    std::random_device rd;  // Non-deterministic random source
-    std::mt19937 gen(rd()); 
-    std::uniform_real_distribution<double> dis(min, max);
-    return dis(gen);
-}
+//returns random double in range [min, max]
+double randomDouble(double min, double max);
 
-int main() {
+//executes thread benchmark draw()
+void benchmarkDraw(Scene & scene);
+
+int main(int argc, char** argv) {
+    
+    //set size ranges
     std::vector<Sphere> spheres;
-    int numSpheres = 80;
+    int numSpheres = 100;
+    double minRadius = 15, maxRadius = 200;
 
-    double minRadius = 50, maxRadius = 300;   // Sphere size range
 
     // Generate spheres with random attributes
+    cout << "Randomizing Spheres..." << endl;
+
+    //seed
+    srand(static_cast<unsigned int>(time(nullptr)));
+
     for (int i = 0; i < numSpheres; i++) {
         double radius = randomDouble(minRadius, maxRadius);
         myVector position(
@@ -42,7 +49,9 @@ int main() {
         spheres.emplace_back(radius, position, color);
     }
 
+
     // Create scene with the generated spheres
+    cout << "Constructing Scene" << endl;
     Scene scene(spheres);
 
     // Set constants for the scene
@@ -54,6 +63,31 @@ int main() {
     scene.set_width(SCENE_WIDTH);                     // Output width (Full HD resolution)
     scene.set_viewpoint(myVector(800, 800, -2000));     // Camera position looking at the scene
 
+
+    //draw the scene
+    cout << "Drawing Scene..." << endl;
+
+    if (argc != 1){
+        if (*argv[1] == 'T') benchmarkDraw(scene);
+    }else{
+        scene.multiThreadedDraw();
+    }
+
+    cout << "Done!" << endl;
+    return 0;
+}
+
+//returns random double in range [min, max]
+double randomDouble(double min, double max){
+    //grab a randon double
+    double rand = static_cast<float>(std::rand()) / RAND_MAX;
+
+    //set range [min, max]
+    return min + rand * (max - min);
+}
+
+//executes thread benchmark draw()
+void benchmarkDraw(Scene & scene){
     //timed executions output to the console
     cout << "Starting single thread execution..." << endl;
     auto startSingle = chrono::high_resolution_clock::now();
@@ -65,7 +99,7 @@ int main() {
 
     cout << "Elapsed time: " << elapsedSingle.count() << " seconds\n";
     
-    // Draw the scene
+    // Draw the scene multi thread
     cout << "Starting multi-threaded execution..." << endl;
     auto startMult = chrono::high_resolution_clock::now();
 
@@ -75,6 +109,4 @@ int main() {
     chrono::duration<double> elapsedMult = endMult - startMult;
 
     cout << "Elapsed time: " << elapsedMult.count() << " seconds\n";
-
-    return 0;
 }
