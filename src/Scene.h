@@ -2,16 +2,17 @@
 
 #pragma once
 
-#include "Sphere.h"
+#include "Object.h"
 #include <fstream>
 #include <vector>
+#include <memory>
 
+using namespace std;
 
 class Scene {
 private:
     int m_count; //number of objects
-    std::vector <Sphere> m_objects = {}; //array of spheres (eventually i want to make the spheres a subclass of objects
-                       //so that I can render planes for the background and walls 
+    vector<shared_ptr<Object>> m_objs; //array of objects
     myVector m_light_source;
     double m_k_diff; //light diffusion coeff
     double m_k_amb; //abient light coeff
@@ -31,10 +32,18 @@ public:
                            m_width(1080),
                            m_viewpoint(myVector(500, 500, -1000)) {}
 
-    //alternate ctor to take in vector of spheres
-    Scene(const std::vector<Sphere> & spheres);
+    //alternate ctor to take in vector of objects
+    //alternate ctor to take in a vector of spheres
+    Scene(const vector<shared_ptr<Object>>& objs) 
+    {
+        m_count = objs.size();
 
-    ~Scene() { }
+        for (const auto& sp : objs){
+            m_objs.emplace_back(sp);
+        }
+    }
+
+        ~Scene() { }
 
     //setters
     void set_background(Color background) { m_background = background; }
