@@ -43,6 +43,11 @@ struct myVector {
     friend myVector operator - (const myVector& lhs, const myVector& rhs) {
         return myVector(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
     }
+
+    friend myVector operator + (const myVector& lhs, const myVector& rhs) {
+        return myVector(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
+    }
+
     friend bool operator != (const myVector& lhs, const myVector& rhs) {
         if (lhs.x != rhs.x && lhs.y != rhs.y && lhs.z != rhs.z)
         { return true; } else { return false; }
@@ -57,6 +62,9 @@ struct myVector {
     //normalize myVector
     friend myVector Normalize(myVector vector)
     {
+        if (vector.x == 0 && vector.y == 0 && vector.z == 0){
+            return vector;
+        }
         double mag = sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
         return myVector(vector.x / mag, vector.y / mag, vector.z / mag);
     }

@@ -1,36 +1,47 @@
-// Demonstrates ray tracing functionality with multiple spheres and colors
+// Demonstrates ray tracing functionality with multiple objs and colors
 // Outputs to a .ppm file, I use GIMP to display .ppm
 
+//usage ./raytracer [benchmark mode: T (optional)]
+
+#include "Plane.h"
+#include "Sphere.h"
 #include "Scene.h"
 #include "Globals.h"
 #include <vector>
 #include <random>
 #include <iostream>
 #include <chrono>
+#include <memory>
 
 using namespace std;
 
-// Function to generate a random float within a range
-double randomDouble(double min, double max) {
-    std::random_device rd;  // Non-deterministic random source
-    std::mt19937 gen(rd()); 
-    std::uniform_real_distribution<double> dis(min, max);
-    return dis(gen);
-}
+//returns random double in range [min, max]
+double randomDouble(double min, double max);
 
-int main() {
-    std::vector<Sphere> spheres;
-    int numSpheres = 80;
+//executes thread benchmark draw()
+void benchmarkDraw(Scene & scene);
 
-    double minRadius = 50, maxRadius = 300;   // Sphere size range
+int main(int argc, char** argv) {
+    
+    //set size ranges
+    vector<shared_ptr<Object>> objs;
+    int numobjs = 50;
+    double minRadius = 150, maxRadius = 700;
+
 
     // Generate spheres with random attributes
-    for (int i = 0; i < numSpheres; i++) {
+    cout << "Randomizing Objects..." << endl;
+    
+    //seed
+    srand(static_cast<unsigned int>(time(nullptr)));
+
+    //generate sphere objects
+    for (int i = 0; i < numobjs; i++) {
         double radius = randomDouble(minRadius, maxRadius);
         myVector position(
-            randomDouble(-500, SCENE_WIDTH + 500),   // X position
-            randomDouble(-300, SCENE_HEIGHT + 300),  // Y position
-            randomDouble(0, 1000)    // Z position
+            randomDouble(-8000, SCENE_WIDTH + 8000),   // X position
+            randomDouble(50, SCENE_HEIGHT + 800),  // Y position
+            randomDouble(1000, 17000)    // Z position
         );
 
         Color color(
@@ -39,21 +50,51 @@ int main() {
             static_cast<int>(randomDouble(50, 255))   // Blue
         );
 
-        spheres.emplace_back(radius, position, color);
+        objs.emplace_back(make_shared<Sphere>(radius, position, color));
     }
 
-    // Create scene with the generated spheres
-    Scene scene(spheres);
+    //create a floor  and add it to objs 
+    objs.emplace_back(make_shared<Plane>(myVector(0.0, 0.0, 1.0), myVector(0, 1, 0), Color(255,10,10)));
+
+
+    // Create scene with the generated objs
+    cout << "Constructing Scene" << endl;
+    Scene scene(objs);
 
     // Set constants for the scene
-    scene.set_background(Color(50, 50, 50));          // Dim gray background
-    scene.set_k_diff(0.6);                            // Diffuse reflection coefficient
-    scene.set_k_amb(0.3);                             // Ambient light coefficient
-    scene.set_light_source(myVector(400, 100, -2000));      // Light source above and to the side
-    scene.set_height(SCENE_HEIGHT);                   // Output height (Full HD resolution)
-    scene.set_width(SCENE_WIDTH);                     // Output width (Full HD resolution)
+    scene.set_background(Color(SCENE_BACKGROUND));          // Dim gray background
+    scene.set_k_diff(SCENE_K_DIFF);                            // Diffuse reflection coefficient
+    scene.set_k_amb(SCENE_K_AMB);                             // Ambient light coefficient
+    scene.set_light_source(myVector(SCENE_LIGHT_SRC));      // Light source 
+    scene.set_height(SCENE_HEIGHT);                   // Output height
+    scene.set_width(SCENE_WIDTH);                     // Output width
     scene.set_viewpoint(myVector(800, 800, -2000));     // Camera position looking at the scene
 
+
+    //draw the scene
+    cout << "Drawing Scene..." << endl;
+
+    if (argc != 1){
+        if (*argv[1] == 'T') benchmarkDraw(scene);
+    }else{
+        scene.multiThreadedDraw();
+    }
+
+    cout << "Done!" << endl;
+    return 0;
+}
+
+//returns random double in range [min, max]
+double randomDouble(double min, double max){
+    //grab a randon double
+    double rand = static_cast<float>(std::rand()) / RAND_MAX;
+
+    //set range [min, max]
+    return min + rand * (max - min);
+}
+
+//executes thread benchmark draw()
+void benchmarkDraw(Scene & scene){
     //timed executions output to the console
     cout << "Starting single thread execution..." << endl;
     auto startSingle = chrono::high_resolution_clock::now();
@@ -65,7 +106,7 @@ int main() {
 
     cout << "Elapsed time: " << elapsedSingle.count() << " seconds\n";
     
-    // Draw the scene
+    // Draw the scene multi thread
     cout << "Starting multi-threaded execution..." << endl;
     auto startMult = chrono::high_resolution_clock::now();
 
@@ -75,6 +116,4 @@ int main() {
     chrono::duration<double> elapsedMult = endMult - startMult;
 
     cout << "Elapsed time: " << elapsedMult.count() << " seconds\n";
-
-    return 0;
 }
