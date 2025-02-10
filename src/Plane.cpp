@@ -1,6 +1,5 @@
 #include "Plane.h"
 #include <iostream>
-#include "Globals.h"
 
 bool Plane::CheckCollision(const Ray& ray, double & pt) const{
     //start with the plane normal Pn (make sure to normalize it)
@@ -38,4 +37,9 @@ Color Plane::getColor(const Ray &ray, const double & t, myVector & intersectPt, 
     lightNorm = Normalize(myVector(SCENE_LIGHT_SRC) - intersectPt); 
 
     return this->m_color;
+}
+
+const double &Plane::getSpecialVal() const
+{
+    return 0.0;
 }

@@ -1,5 +1,4 @@
 #include "Scene.h"
-#include "Globals.h"
 #include <thread>
 #include <vector>
 #include <iostream>
@@ -131,27 +130,27 @@ void Scene::multiThreadedDraw(){
         }
     };
     
-    //cout << "Starting Threads...\n";
+    if (globals::debug) cout << "Starting Threads...\n";
     
     //start threads
     for (size_t i = 0; i < threadCount-1; i ++){
         threads.emplace_back(drawRow, perThread*i, perThread*i + perThread);
-        //cout << "   Starting " << threads[i].get_id() << endl;
+        if (globals::debug) cout << "   Starting " << threads[i].get_id() << endl;
     }
 
     //fill last thread with remainder of rows
     threads.emplace_back(drawRow, perThread*(threadCount-1), m_height);
-    //cout << "   Starting " << threads[threads.size()-1].get_id() << endl;
+    if (globals::debug) cout << "   Starting " << threads[threads.size()-1].get_id() << endl;
 
-    //cout << "Joining Threads...\n";
+    if (globals::debug) cout << "Joining Threads...\n";
     
     //join threads
     for (auto& t : threads) {
-        //cout << "   Joining " << t.get_id() << endl;
+        if (globals::debug) cout << "   Joining " << t.get_id() << endl;
         t.join();
     }
 
-    //cout << "All threads successfully joined\n";
+    if (globals::debug) cout << "All threads successfully joined\n";
 
     //set up output stream
     std:: ofstream out("output/out.ppm");
@@ -167,7 +166,20 @@ void Scene::multiThreadedDraw(){
         out << endl;
     }
 
-    //cout << "Rendering Complete. Output saved as output/out.ppm" << endl;
+    if (globals::debug) cout << "Rendering Complete. Output saved as output/out.ppm" << endl;
 
     return;
+}
+
+bool Scene::checkSphereCollision(const Sphere & sphere) const
+{
+    for (long long unsigned int i = 0; i < this->m_objs.size(); i ++){
+        if (sphere.CheckSphereCollision(Sphere(m_objs[i]->getSpecialVal(), 
+                                               m_objs[i]->getOrigin(), 
+                                               m_objs[i]->getColor()))){
+                                                if (globals::debug) cout << "Sphere Collision Detected!" << endl;
+                                                return true;
+                                               }
+    }
+    return false;
 }

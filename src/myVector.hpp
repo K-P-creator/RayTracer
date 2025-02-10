@@ -68,4 +68,11 @@ struct myVector {
         double mag = sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
         return myVector(vector.x / mag, vector.y / mag, vector.z / mag);
     }
+
+    //compute distance between two vectors as if two points in 3D space
+    friend double Dist(const myVector& vec1, const myVector& vec2){
+        return sqrt((vec1.x-vec2.x)*(vec1.x-vec2.x)+
+                    (vec1.y-vec2.y)*(vec1.y-vec2.y)+
+                    (vec1.z-vec2.z)*(vec1.z-vec2.z));
+    }
 };

@@ -29,4 +29,5 @@ class Plane : public Object {
 	bool CheckCollision(const Ray& ray, double & pt) const override;
 	bool CheckCollision(const Ray& ray) const;
     Color getColor (const Ray & ray, const double & t, myVector&, myVector&, myVector&) const override;
+    const double & getSpecialVal() const override;
 };

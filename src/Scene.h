@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Object.h"
+#include "Sphere.h"
+#include "Color.hpp"
 #include <fstream>
 #include <vector>
 #include <memory>
@@ -61,4 +63,10 @@ public:
 
     //threaded draw function to improve efficientcy with parallel processing
     void multiThreadedDraw();
+
+    //check if sphere intersects with any other spheres in scene
+    //I only use this for drawing when there are no other object subclasses
+    //initialized in side the object list. This wont work if there are other shapes in there
+    //it is purely for random sphere generation
+    bool checkSphereCollision(const Sphere &) const;
 };

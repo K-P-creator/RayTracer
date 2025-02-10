@@ -14,7 +14,7 @@ class Sphere : public Object {
 	}
 
 	//par ctor
-	Sphere(double& radius, myVector& origin, Color& color) : Object {origin, color} {
+	Sphere(const double & radius, const myVector& origin, const Color& color) : Object {origin, color} {
 		this->m_radius = radius;
 	}
 
@@ -29,4 +29,11 @@ class Sphere : public Object {
 	bool CheckCollision(const Ray& ray, double & pt) const override;
 	bool CheckCollision(const Ray& ray) const;
 	Color getColor (const Ray & ray, const double & t, myVector&, myVector&, myVector&) const override;
+	
+	//returns true if spheres intersect with one another
+	//I'll use this for drawing random scenes without intersecting spheres
+	bool CheckSphereCollision(const Sphere &) const;
+
+	//return the radius
+	const double & getSpecialVal() const override;
 };

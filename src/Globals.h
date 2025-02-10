@@ -1,5 +1,5 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
+
 
 //output image resolution
 //my native res
@@ -16,4 +16,11 @@
 //spheres farther than this number from the origin will not be rendered
 #define MAX_DISTANCE 200000 
 
-#endif // GLOBALS_H
+namespace globals{
+    //RUNTIME FLAGS
+    //Debug flag will enable debug messages - format is -debug in the command line
+    extern bool debug;
+    //Benchmark flag will enable benchmark mode which compares the single vs multithread performance
+    //this will print timed executions for both drawing methods. use -bench on command line
+    extern bool bench;
+}

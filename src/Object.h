@@ -6,6 +6,7 @@
 #include "Color.hpp"
 #include <vector>
 #include "Ray.hpp"
+#include "Globals.h"
 
 using namespace std;
 
@@ -38,6 +39,9 @@ class Object {
     virtual Color getColor(const Ray&, const double &, myVector&, myVector&, myVector&) const = 0;
 
     virtual ~Object() = default;
+
+    //this will return the special value from the derived class. its redius for spheres
+    virtual const double & getSpecialVal() const = 0;
 
     //Getters
     const myVector& getOrigin() const {

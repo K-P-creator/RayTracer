@@ -15,13 +15,10 @@
 
 using namespace std;
 
-//RUNTIME FLAGS
-
-//Debug flag will enable debug messages - format is -debug in the command line
-bool debug = false;
-//Benchmark flag will enable benchmark mode which compares the single vs multithread performance
-//this will print timed executions for both drawing methods. use -bench on command line
-bool bench = false;
+namespace globals{
+    bool debug = false;
+    bool bench = false;
+}
 
 //returns random double in range [min, max]
 double randomDouble(double min, double max);
@@ -29,11 +26,11 @@ double randomDouble(double min, double max);
 //executes thread benchmark draw()
 void benchmarkDraw(Scene & scene);
 
-void parseArgs(int, char**, bool&, bool&);
+void parseArgs(int, char**);
 
 int main(int argc, char** argv) {
     //parse command line args
-    parseArgs(argc, argv, debug, bench);
+    parseArgs(argc, argv);
 
     //set size ranges
     vector<shared_ptr<Object>> objs;
@@ -42,19 +39,25 @@ int main(int argc, char** argv) {
 
 
     // Generate spheres with random attributes
-    if (debug) cout << endl << "Randomizing Objects..." << endl;
+    if (globals::debug) cout << endl << "Randomizing Objects..." << endl;
     
     //seed
     srand(static_cast<unsigned int>(time(nullptr)));
 
     //generate sphere objects
+    if (globals::debug) cout << "Generating Spheres..." << endl;
     for (int i = 0; i < numobjs; i++) {
         double radius = randomDouble(minRadius, maxRadius);
-        myVector position(
-            randomDouble(-8000, SCENE_WIDTH + 8000),   // X position
-            randomDouble(50, SCENE_HEIGHT + 800),  // Y position
-            randomDouble(1000, 17000)    // Z position
-        );
+        bool collide = true;
+        myVector position;
+        while (collide && objs.size() != 0){
+            position = myVector(
+                randomDouble(-8000, SCENE_WIDTH + 8000),   // X position
+                randomDouble(50, SCENE_HEIGHT + 800),  // Y position
+                randomDouble(1000, 17000)    // Z position
+            );
+            collide = Scene(objs).checkSphereCollision(Sphere(radius, position, Color(1,1,1)));
+        }
 
         Color color(
             static_cast<int>(randomDouble(50, 255)),  // Red
@@ -66,14 +69,15 @@ int main(int argc, char** argv) {
     }
 
     //create a floor plane and add it to objs 
+    if (globals::debug) cout << "Generating Plane..." << endl;
     objs.emplace_back(make_shared<Plane>(myVector(0.0, 0.0, 1.0), myVector(0, 1, 0), Color(255,10,10)));
 
 
     // Create scene with the generated objs
-    if (debug) cout << "Constructing Scene..." << endl;
+    if (globals::debug) cout << "Constructing Scene..." << endl;
     Scene scene(objs);
 
-    if (debug) cout << "Setting Constants..." << endl;
+    if (globals::debug) cout << "Setting Constants..." << endl;
 
     // Set constants for the scene
     scene.set_background(Color(SCENE_BACKGROUND));          // Dim gray background
@@ -86,17 +90,17 @@ int main(int argc, char** argv) {
 
 
     //draw the scene
-    if (debug) cout << "Drawing Scene..." << endl;
+    if (globals::debug) cout << "Drawing Scene..." << endl;
 
-    if (bench){
-        if (debug) cout << "Starting Benchmark Draws..." << endl;
+    if (globals::bench){
+        if (globals::debug) cout << "Starting Benchmark Draws..." << endl;
         benchmarkDraw(scene);
     }else{
-        if (debug) cout << "Starting MultiThreaded Draw..." << endl;
+        if (globals::debug) cout << "Starting MultiThreaded Draw..." << endl;
         scene.multiThreadedDraw();
     }
 
-    if (debug) cout << "Done!" << endl;
+    if (globals::debug) cout << "Done!" << endl;
     return 0;
 }
 
@@ -134,9 +138,9 @@ void benchmarkDraw(Scene & scene){
     cout << "Elapsed time: " << elapsedMult.count() << " seconds\n";
 }
 
-void parseArgs(int argc, char** argv, bool& debug, bool& bench){
+void parseArgs(int argc, char** argv){
     for (int i = 1; i < argc; i ++){
-        if (string(argv[i]) == "-bench") bench = true;
-        if (string(argv[i]) == "-debug") debug = true;
+        if (string(argv[i]) == "-bench") globals::bench = true;
+        if (string(argv[i]) == "-debug") globals::debug = true;
     }
 }

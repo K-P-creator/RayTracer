@@ -1,5 +1,4 @@
 #include "Sphere.h"
-#include "Globals.h"
 
 bool Sphere::CheckCollision(const Ray& ray, double & t) const
 {
@@ -73,4 +72,18 @@ Color Sphere::getColor(const Ray &ray, const double & t, myVector & intersectPt,
 
     
     return color;
+}
+
+bool Sphere::CheckSphereCollision(const Sphere & sphere) const
+{
+    if (Dist(this->m_origin, sphere.m_origin) < (this->m_radius + sphere.m_radius)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+const double &Sphere::getSpecialVal() const
+{
+    return m_radius;
 }
