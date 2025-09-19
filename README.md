@@ -6,6 +6,8 @@ This ray tracer implements **multi-threading** for improved rendering performanc
 ## Examples
 
 ![Example1](output/100_SPHERE_2560x1600.jpg)
+![Example2](output/EXAMPLE_WITH_PLANE_AND_SPHERES.png)
+![Example3](output/SPHERES_AND_PLANE_EXAMPLE_2.png)
 
 ## Performance
 Tested on an **AMD Ryzen 9 6900HS (16 threads)**, rendering a **2560x1600** scene with **100 random spheres**:
