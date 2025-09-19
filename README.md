@@ -3,6 +3,10 @@
 ## Overview
 This ray tracer implements **multi-threading** for improved rendering performance. It supports **spheres** and **planes** using an `Object` base class with derived shape classes. The output is a `.ppm` file, viewable in **GIMP** or other image viewers.
 
+## Examples
+
+![Example1](out/100_SPHERE_2560x1600.png)
+
 ## Performance
 Tested on an **AMD Ryzen 9 6900HS (16 threads)**, rendering a **2560x1600** scene with **100 random spheres**:
 
