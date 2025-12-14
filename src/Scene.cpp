@@ -153,8 +153,8 @@ void Scene::multiThreadedDraw(){
     if (globals::debug) cout << "All threads successfully joined\n";
 
     //set up output stream
-    std:: ofstream out("output/out.ppm");
-    assert(out);
+    std::ofstream out("../output/out.ppm");
+    assert(out); 
     out << "P3\n" << m_width << '\n' << m_height << '\n' << "255\n";
 
     //print to ppm file
